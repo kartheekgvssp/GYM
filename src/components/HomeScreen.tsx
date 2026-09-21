@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Bell, 
   Flame, 
@@ -61,9 +61,71 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(2);
 
-  const filteredExercises = selectedMuscle === 'All'
-    ? EXERCISE_DATABASE.slice(0, 4)
-    : EXERCISE_DATABASE.filter(ex => ex.muscleGroup === selectedMuscle);
+  // Helper to extract exercises for any dayPlan
+  const getExercisesForDayPlan = (dayPlan: DayWorkoutPlan): Exercise[] => {
+    if (dayPlan.isRestDay) return [];
+    const list: Exercise[] = [];
+
+    // Base preset or configured exercise IDs
+    if (dayPlan.exerciseIds && dayPlan.exerciseIds.length > 0) {
+      const fromIds = EXERCISE_DATABASE.filter(e => dayPlan.exerciseIds!.includes(e.id));
+      list.push(...fromIds);
+    } else {
+      const preset = PRELOADED_WORKOUT_OPTIONS.find(
+        opt => opt.id === dayPlan.presetWorkoutId || opt.title === dayPlan.workoutTitle
+      );
+      if (preset && preset.exerciseIds && preset.exerciseIds.length > 0) {
+        const fromPreset = EXERCISE_DATABASE.filter(e => preset.exerciseIds.includes(e.id));
+        list.push(...fromPreset);
+      }
+    }
+
+    // Append any custom exercises (such as exercises scanned and added via Camera)
+    if (dayPlan.customExercises && dayPlan.customExercises.length > 0) {
+      dayPlan.customExercises.forEach(customEx => {
+        if (!list.some(existing => existing.id === customEx.id || existing.name.toLowerCase() === customEx.name.toLowerCase())) {
+          list.push(customEx);
+        }
+      });
+    }
+
+    return list;
+  };
+
+  // Combine only the exercises selected by user across all week days activities
+  const weeklyCombinedExercises = useMemo(() => {
+    const exerciseMap = new Map<string, { exercise: Exercise; scheduledDays: string[] }>();
+
+    weeklyPlan.forEach((dayPlan) => {
+      if (dayPlan.isRestDay) return;
+      const dayExercises = getExercisesForDayPlan(dayPlan);
+      const shortDay = dayPlan.dayShort || dayPlan.day.slice(0, 3);
+
+      dayExercises.forEach((ex) => {
+        if (!exerciseMap.has(ex.id)) {
+          exerciseMap.set(ex.id, {
+            exercise: ex,
+            scheduledDays: [shortDay],
+          });
+        } else {
+          const item = exerciseMap.get(ex.id)!;
+          if (!item.scheduledDays.includes(shortDay)) {
+            item.scheduledDays.push(shortDay);
+          }
+        }
+      });
+    });
+
+    return Array.from(exerciseMap.values());
+  }, [weeklyPlan]);
+
+  // Filter combined exercises by selected muscle target, or show all week exercises
+  const filteredWeeklyExercises = useMemo(() => {
+    if (selectedMuscle === 'All') {
+      return weeklyCombinedExercises;
+    }
+    return weeklyCombinedExercises.filter(item => item.exercise.muscleGroup === selectedMuscle);
+  }, [weeklyCombinedExercises, selectedMuscle]);
 
   // Find workout option details or custom exercises matching today's plan
   const matchedPreset = PRELOADED_WORKOUT_OPTIONS.find(
@@ -355,52 +417,104 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </section>
 
-      {/* Quick Exercise Library Hits for Target Muscle */}
+      {/* Quick Exercise Library Hits for Target Muscle (Filtered exclusively from weekly plan combination) */}
       <section className="mb-6 space-y-3">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-extrabold uppercase tracking-wider text-[#8E95A5]">
-            Featured {selectedMuscle !== 'All' ? selectedMuscle : 'Power'} Lifts
-          </span>
-          <span className="text-[10px] font-mono" style={{ color: theme.primary }}>Tap for form tips</span>
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold uppercase tracking-wider text-white">
+              Featured {selectedMuscle !== 'All' ? selectedMuscle : 'Power'} Lifts
+            </span>
+            <span 
+              className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold"
+              style={{ backgroundColor: `${theme.primary}20`, color: theme.primary }}
+            >
+              {filteredWeeklyExercises.length} in Week Plan
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-[#8E95A5]">Tap for form tips</span>
         </div>
 
-        <div className="grid gap-2.5">
-          {filteredExercises.map((exercise) => (
-            <div
-              key={exercise.id}
-              onClick={() => onSelectExercise(exercise)}
-              className="flex items-center justify-between p-3 rounded-2xl bg-[#12141D] border border-[#202534] transition-all cursor-pointer group hover:border-[#353F57]"
-            >
-              <div className="flex items-center gap-3">
-                <img
-                  src={exercise.image}
-                  alt={exercise.name}
-                  className="w-12 h-12 rounded-xl object-cover bg-[#1B1F2C] border border-[#262C3C] group-hover:scale-105 transition-transform"
-                />
-                <div>
-                  <h4 
-                    className="text-sm font-bold text-white transition-colors leading-snug"
-                  >
-                    {exercise.name}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#8E95A5]">
-                    <span className="font-mono font-semibold" style={{ color: theme.primary }}>
-                      {exercise.defaultSets} sets × {exercise.defaultReps}
-                    </span>
-                    <span>•</span>
-                    <span>{exercise.equipment}</span>
+        {filteredWeeklyExercises.length > 0 ? (
+          <div className="grid gap-2.5">
+            {filteredWeeklyExercises.map(({ exercise, scheduledDays }) => (
+              <div
+                key={exercise.id}
+                onClick={() => {
+                  haptics.trigger('light');
+                  onSelectExercise(exercise);
+                }}
+                className="flex items-center justify-between p-3 rounded-2xl bg-[#12141D] border border-[#202534] transition-all cursor-pointer group hover:border-[#353F57]"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={exercise.image}
+                    alt={exercise.name}
+                    className="w-12 h-12 rounded-xl object-cover bg-[#1B1F2C] border border-[#262C3C] group-hover:scale-105 transition-transform"
+                  />
+                  <div>
+                    <h4 
+                      className="text-sm font-bold text-white transition-colors leading-snug group-hover:text-white"
+                    >
+                      {exercise.name}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#8E95A5]">
+                      <span className="font-mono font-semibold" style={{ color: theme.primary }}>
+                        {exercise.defaultSets} sets × {exercise.defaultReps}
+                      </span>
+                      <span>•</span>
+                      <span>{exercise.equipment}</span>
+                    </div>
+                    {/* Days Scheduled from Weekly Activities Combination */}
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-[9px] uppercase font-mono font-bold text-[#636C80]">
+                        Days:
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {scheduledDays.map((d) => (
+                          <span
+                            key={d}
+                            className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#1A1F2D] text-[#BAC4D9] border border-[#2B3448]"
+                          >
+                            {d}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div 
-                className="w-8 h-8 rounded-full bg-[#181C28] flex items-center justify-center text-[#8E95A5] transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
+                <div 
+                  className="w-8 h-8 rounded-full bg-[#181C28] flex items-center justify-center text-[#8E95A5] group-hover:text-white transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-4 rounded-2xl bg-[#12141D] border border-[#202534] text-center space-y-2">
+            <div className="w-9 h-9 rounded-full bg-[#181C28] flex items-center justify-center mx-auto text-[#8E95A5]">
+              <Dumbbell className="w-4 h-4" style={{ color: theme.primary }} />
             </div>
-          ))}
-        </div>
+            <p className="text-xs font-bold text-white">
+              No {selectedMuscle !== 'All' ? selectedMuscle : ''} exercises in your current weekly plan
+            </p>
+            <p className="text-[11px] text-[#8E95A5] max-w-xs mx-auto">
+              Featured Power Lifts displays only the exercises chosen across your combined weekly schedule.
+            </p>
+            <button
+              onClick={() => {
+                haptics.trigger('medium');
+                onOpenWeeklySetup();
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition active:scale-95 shadow-md mt-1"
+              style={{ backgroundColor: setupColor, color: '#0A0B0F' }}
+            >
+              <Calendar className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Customize Week Plan</span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* PWA Mobile App Install Bar */}

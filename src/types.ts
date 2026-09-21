@@ -61,3 +61,33 @@ export interface AuthUser {
   phoneNumber: string;
   displayName: string;
 }
+
+export interface ScannedExercise {
+  name: string;
+  difficulty: DifficultyLevel;
+  targetArea: string;
+  howToPerform: string[];
+  recommendedReps: {
+    hypertrophy: string;
+    strength: string;
+    endurance: string;
+  };
+  recommendedSets: string;
+  restPeriod: string;
+  formTips: string[];
+}
+
+export interface EquipmentBenefit {
+  title: string;
+  description: string;
+}
+
+export interface EquipmentScanData {
+  equipmentName: string;
+  equipmentType: 'machine' | 'cable' | 'barbell' | 'dumbbell' | 'bodyweight' | 'other';
+  primaryMuscle: MuscleGroup;
+  targetMuscles: string[];
+  overview: string;
+  benefitsAndUses: EquipmentBenefit[];
+  exercises: ScannedExercise[];
+}

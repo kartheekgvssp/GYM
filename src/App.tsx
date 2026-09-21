@@ -114,6 +114,31 @@ export default function App() {
     }
   };
 
+  const handleAddScannedExerciseToWeeklyPlan = async (
+    exercise: Exercise,
+    targetDays: Weekday[]
+  ) => {
+    const updated = weeklyPlan.map((dayPlan) => {
+      if (!targetDays.includes(dayPlan.day)) return dayPlan;
+
+      const existingCustom = dayPlan.customExercises || [];
+      // Avoid duplicate exercises with same name
+      if (existingCustom.some(e => e.name.toLowerCase() === exercise.name.toLowerCase())) {
+        return dayPlan;
+      }
+
+      return {
+        ...dayPlan,
+        isRestDay: false,
+        workoutTitle: dayPlan.isRestDay ? `${exercise.name} Focus` : dayPlan.workoutTitle,
+        exercisesCount: (dayPlan.exercisesCount || 0) + 1,
+        customExercises: [...existingCustom, exercise],
+      };
+    });
+
+    await handleSaveWeeklyPlan(updated);
+  };
+
   const handleStartWorkout = (workout: WorkoutSession) => {
     setActiveWorkout(workout);
   };
@@ -185,7 +210,12 @@ export default function App() {
         )}
 
         {currentTab === 'camera' && (
-          <CameraView onClose={() => setCurrentTab('home')} />
+          <CameraView 
+            onClose={() => setCurrentTab('home')} 
+            weeklyPlan={weeklyPlan}
+            onAddExerciseToWeeklyPlan={handleAddScannedExerciseToWeeklyPlan}
+            onNavigateToHome={() => setCurrentTab('home')}
+          />
         )}
 
         {currentTab === 'me' && (
