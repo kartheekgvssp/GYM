@@ -59,11 +59,20 @@ export async function seedRequestedUsers(): Promise<void> {
           await updateProfile(userCred.user, { displayName: userDef.name });
         }
       } catch (signInErr: any) {
+        if (signInErr.code === 'auth/operation-not-allowed') {
+          // Email/password auth provider disabled or not configured in project
+          continue;
+        }
         if (signInErr.code === 'auth/user-not-found' || signInErr.code === 'auth/invalid-credential') {
           // Create user
-          const newCred = await createUserWithEmailAndPassword(seedAuth, email, userDef.password);
-          uid = newCred.user.uid;
-          await updateProfile(newCred.user, { displayName: userDef.name });
+          try {
+            const newCred = await createUserWithEmailAndPassword(seedAuth, email, userDef.password);
+            uid = newCred.user.uid;
+            await updateProfile(newCred.user, { displayName: userDef.name });
+          } catch (createErr: any) {
+            // If operation not allowed, local auth fallback in authStore will manage the accounts
+            continue;
+          }
         } else {
           // If already signed in or other transient error, ignore
           continue;

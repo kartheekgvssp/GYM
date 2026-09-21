@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut as fbSignOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { TabType, Exercise, WorkoutSession, DayWorkoutPlan, Weekday, AuthUser } from './types';
 import { INITIAL_STATS, EXERCISE_DATABASE, DEFAULT_WEEKLY_PLAN } from './data/mockData';
 import { auth, loadUserWorkoutData, saveUserWorkoutData } from './lib/firebase';
+import { getActiveLocalSession, signOutUser, setActiveLocalSession } from './lib/authStore';
 import { seedRequestedUsers } from './lib/seedUsers';
 import { AuthScreen } from './components/AuthScreen';
 import { HomeScreen } from './components/HomeScreen';
@@ -19,8 +20,8 @@ import { ThemeSelectorModal } from './components/ThemeSelectorModal';
 import { haptics } from './lib/haptics';
 
 export default function App() {
-  // Authentication State
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  // Authentication State with instant local session hydration
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getActiveLocalSession());
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const [currentTab, setCurrentTab] = useState<TabType>('home');
@@ -34,14 +35,26 @@ export default function App() {
   const [stats, setStats] = useState(INITIAL_STATS);
   const [weeklyPlan, setWeeklyPlan] = useState<DayWorkoutPlan[]>(DEFAULT_WEEKLY_PLAN);
 
+  // Load user data helper
+  const loadForUser = async (uid: string) => {
+    const { weeklyPlan: userPlan, stats: userStats } = await loadUserWorkoutData(uid);
+    setWeeklyPlan(userPlan);
+    setStats(userStats);
+  };
+
   // 1. Listen for Firebase Auth changes and seed initial requested accounts
   useEffect(() => {
-    // Seed requested accounts in Firebase Auth and Firestore quietly
-    seedRequestedUsers().catch((e) => console.warn('Seed error', e));
+    seedRequestedUsers().catch((e) => console.warn('Seed notice:', e));
+
+    const existingLocal = getActiveLocalSession();
+    if (existingLocal) {
+      setCurrentUser(existingLocal);
+      loadForUser(existingLocal.uid);
+      setIsAuthLoading(false);
+    }
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Derive clean username or phone number
         const rawAccount = firebaseUser.email 
           ? firebaseUser.email.replace('user_', '').replace('@aurafit.app', '') 
           : '';
@@ -51,16 +64,15 @@ export default function App() {
           displayName: firebaseUser.displayName || rawAccount || 'Athlete',
         };
         setCurrentUser(userObj);
-
-        // Load strictly isolated user data
-        const { weeklyPlan: userPlan, stats: userStats } = await loadUserWorkoutData(firebaseUser.uid);
-        setWeeklyPlan(userPlan);
-        setStats(userStats);
+        setActiveLocalSession(userObj);
+        await loadForUser(firebaseUser.uid);
       } else {
-        setCurrentUser(null);
-        // Reset to initial clean state when logged out to prevent data leakage
-        setWeeklyPlan(DEFAULT_WEEKLY_PLAN);
-        setStats(INITIAL_STATS);
+        const localActive = getActiveLocalSession();
+        if (!localActive) {
+          setCurrentUser(null);
+          setWeeklyPlan(DEFAULT_WEEKLY_PLAN);
+          setStats(INITIAL_STATS);
+        }
       }
       setIsAuthLoading(false);
     });
@@ -71,7 +83,7 @@ export default function App() {
   const handleSignOut = async () => {
     haptics.trigger('selection');
     try {
-      await fbSignOut(auth);
+      await signOutUser();
       setCurrentUser(null);
       setWeeklyPlan(DEFAULT_WEEKLY_PLAN);
       setStats(INITIAL_STATS);
@@ -79,6 +91,14 @@ export default function App() {
       setActiveWorkout(null);
     } catch (err) {
       console.error('Sign out error', err);
+    }
+  };
+
+  const handleLoginSuccess = async (user?: AuthUser) => {
+    if (user) {
+      setCurrentUser(user);
+      setActiveLocalSession(user);
+      await loadForUser(user.uid);
     }
   };
 
@@ -129,7 +149,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#0A0B0F] text-[#EDEEF0] flex flex-col font-sans">
         <OfflineIndicator />
-        <AuthScreen onSuccess={() => {}} />
+        <AuthScreen onSuccess={handleLoginSuccess} />
       </div>
     );
   }

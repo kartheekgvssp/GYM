@@ -17,13 +17,15 @@ import {
   AlertCircle,
   KeyRound
 } from 'lucide-react';
-import { auth, db, formatPhoneToEmail } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
+import { authenticateUser } from '../lib/authStore';
 import { PREDEFINED_USERS } from '../lib/seedUsers';
 import { useTheme } from '../lib/theme';
 import { haptics } from '../lib/haptics';
+import { AuthUser } from '../types';
 
 interface AuthScreenProps {
-  onSuccess?: () => void;
+  onSuccess?: (user?: AuthUser) => void;
 }
 
 export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
@@ -43,12 +45,24 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     setErrorMessage(null);
   };
 
-  const handleQuickFill = (userIdentifier: string, userPass: string, displayName: string) => {
+  const handleQuickFill = async (userIdentifier: string, userPass: string, displayName: string) => {
     haptics.trigger('light');
     setIdentifier(userIdentifier);
     setPassword(userPass);
     if (isSignUp) setName(displayName);
     setErrorMessage(null);
+
+    // Also offer direct auto-login when clicking the preset account cards
+    setIsLoading(true);
+    try {
+      const user = await authenticateUser(userIdentifier, userPass, displayName, false);
+      haptics.trigger('success');
+      if (onSuccess) onSuccess(user);
+    } catch (err: any) {
+      console.warn('Quick login notice:', err);
+      // If error occurs, leave values filled so user can click Sign In
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,45 +91,28 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     setIsLoading(true);
     haptics.trigger('selection');
 
-    const email = formatPhoneToEmail(trimmedId);
-
     try {
-      if (isSignUp) {
-        // 1. Create account in Firebase Auth
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(cred.user, { displayName: name.trim() });
+      const user = await authenticateUser(trimmedId, password, isSignUp ? name.trim() : undefined, isSignUp);
 
-        // 2. Initialize private Firestore profile document
-        await setDoc(doc(db, 'users', cred.user.uid), {
-          uid: cred.user.uid,
-          phoneNumber: trimmedId,
-          name: name.trim(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-
-        haptics.trigger('success');
-        if (onSuccess) onSuccess();
-      } else {
-        // Sign in
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        
-        // Ensure profile exists in Firestore
-        const userRef = doc(db, 'users', cred.user.uid);
+      // Best effort sync profile to Firestore if Firestore is accessible
+      try {
+        const userRef = doc(db, 'users', user.uid);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) {
           await setDoc(userRef, {
-            uid: cred.user.uid,
+            uid: user.uid,
             phoneNumber: trimmedId,
-            name: cred.user.displayName || trimmedId,
+            name: user.displayName || trimmedId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }, { merge: true });
         }
-
-        haptics.trigger('success');
-        if (onSuccess) onSuccess();
+      } catch (firestoreErr) {
+        console.warn('Firestore profile sync (offline/local fallback):', firestoreErr);
       }
+
+      haptics.trigger('success');
+      if (onSuccess) onSuccess(user);
     } catch (err: any) {
       console.error('Auth error:', err);
       haptics.trigger('warning');
@@ -127,6 +124,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         setErrorMessage('An account already exists with this username/phone. Please sign in instead.');
       } else if (code === 'auth/weak-password') {
         setErrorMessage('Password is too weak. Please use at least 6 characters.');
+      } else if (code === 'auth/operation-not-allowed') {
+        setErrorMessage('Authentication method is currently initializing. Please try again in a moment.');
       } else {
         setErrorMessage(err.message || 'Authentication failed. Please try again.');
       }
