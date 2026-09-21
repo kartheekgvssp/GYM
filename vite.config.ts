@@ -1,8 +1,8 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
-import {VitePWA} from 'vite-plugin-pwa';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
@@ -11,14 +11,14 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
+        includeAssets: ['icon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
         manifest: {
           id: '/',
-          name: 'Iron Log — Gym Tracker',
-          short_name: 'Iron Log',
-          description: 'Industrial dark-mode gym tracker PWA with templates, set/rep logging, rest timer, and progress charts.',
-          theme_color: '#14151A',
-          background_color: '#14151A',
+          name: 'AuraFit Gym & Workout',
+          short_name: 'AuraFit',
+          description: "High-energy men's gym and exercise tracker with PhonePe-style camera footer and active workouts.",
+          theme_color: '#0A0B0F',
+          background_color: '#0A0B0F',
           display: 'standalone',
           start_url: '/',
           scope: '/',
@@ -48,6 +48,7 @@ export default defineConfig(() => {
         },
         devOptions: {
           enabled: true,
+          type: 'module',
         },
       }),
     ],
@@ -57,11 +58,8 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      port: 3000,
+      host: '0.0.0.0',
     },
   };
 });

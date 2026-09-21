@@ -1,6 +1,10 @@
 {
-  "name": "Iron Log — Gym Tracker",
-  "description": "Industrial dark-mode gym tracker PWA with workout templates, set/rep/weight logging, rest timer, and progress charts.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "AuraFit Gym & Workout",
+  "description": "High-energy men's gym and exercise PWA with PhonePe-style camera footer, muscle group targeting, and active workout tracking.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

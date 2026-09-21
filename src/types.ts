@@ -1,46 +1,57 @@
-export interface TemplateExercise {
+export type MuscleGroup = 'All' | 'Chest' | 'Back' | 'Legs' | 'Core' | 'Arms' | 'Shoulders';
+
+export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
+
+export interface Exercise {
   id: string;
-  template_id?: string;
   name: string;
-  target_sets: number;
-  target_reps: number;
-  order_index: number;
+  muscleGroup: MuscleGroup;
+  equipment: string;
+  defaultSets: number;
+  defaultReps: number;
+  difficulty: DifficultyLevel;
+  image: string;
+  caloriesBurn: number;
+  tips: string[];
 }
 
-export interface Template {
+export interface WorkoutSession {
   id: string;
-  user_id: string;
-  name: string;
-  created_at?: string;
-  template_exercises: TemplateExercise[];
+  title: string;
+  focus: string;
+  estimatedMinutes: number;
+  difficulty: DifficultyLevel;
+  calories: number;
+  bannerImage: string;
+  exercises: Exercise[];
 }
 
-export interface Session {
-  id: string;
-  user_id: string;
-  template_id?: string | null;
-  started_at: string;
-  completed_at?: string | null;
-  templates?: { name: string } | null;
+export interface DailyStats {
+  weeklyConsistency: boolean[]; // Mon to Sun [true, true, true, false, true, false, false]
+  caloriesBurned: number;
+  targetCalories: number;
+  activeMinutes: number;
+  targetMinutes: number;
+  streakDays: number;
+  consistencyPercentage: number;
 }
 
-export interface SessionSet {
-  id: string;
-  session_id: string;
-  exercise_name: string;
-  set_number: number;
-  reps: number | null;
-  weight: number | null;
-  created_at: string;
+export type Weekday = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+
+export interface DayWorkoutPlan {
+  day: Weekday;
+  dayShort: string;
+  focus: string;
+  workoutTitle: string;
+  isRestDay: boolean;
+  estimatedMinutes: number;
+  exercisesCount: number;
+  targetMuscle: MuscleGroup;
+  presetWorkoutId?: string;
+  exerciseIds?: string[];
+  customExercises?: Exercise[];
+  notes?: string;
+  isCustom?: boolean;
 }
 
-export interface AuthUser {
-  id: string;
-  email: string;
-}
-
-export interface LoggedSetState {
-  reps: number | string;
-  weight: number | string;
-  saved: boolean;
-}
+export type TabType = 'home' | 'exercises' | 'camera' | 'me';
