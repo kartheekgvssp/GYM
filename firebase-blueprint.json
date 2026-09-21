@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with phone number and workout preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "phoneNumber", "createdAt"]
+    },
+    "UserWorkoutData": {
+      "title": "UserWorkoutData",
+      "description": "Isolated per-user workout plans, custom workouts and completion stats",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "weeklyPlan": { "type": "string" },
+        "stats": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user profile documents, accessible only by the owner userId"
+    },
+    "/users/{userId}/data/workoutState": {
+      "schema": "UserWorkoutData",
+      "description": "Private user workout data ensuring zero data leakage between users"
+    }
+  }
+}

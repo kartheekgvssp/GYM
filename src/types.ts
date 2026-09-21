@@ -55,3 +55,9 @@ export interface DayWorkoutPlan {
 }
 
 export type TabType = 'home' | 'exercises' | 'camera' | 'me';
+
+export interface AuthUser {
+  uid: string;
+  phoneNumber: string;
+  displayName: string;
+}

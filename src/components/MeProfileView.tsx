@@ -14,9 +14,11 @@ import {
   CheckCircle2,
   RefreshCw,
   Palette,
-  Vibrate
+  Vibrate,
+  LogOut,
+  Phone
 } from 'lucide-react';
-import { DayWorkoutPlan, DailyStats } from '../types';
+import { DayWorkoutPlan, DailyStats, AuthUser } from '../types';
 import { DEFAULT_WEEKLY_PLAN, INITIAL_STATS } from '../data/mockData';
 import { usePWAInstall } from '../lib/usePWAInstall';
 import { useTheme } from '../lib/theme';
@@ -24,6 +26,8 @@ import { haptics } from '../lib/haptics';
 import { WorkoutAnalyticsCard } from './WorkoutAnalyticsCard';
 
 interface MeProfileViewProps {
+  user?: AuthUser | null;
+  onSignOut?: () => void;
   weeklyPlan?: DayWorkoutPlan[];
   stats?: DailyStats;
   onOpenInstallModal: () => void;
@@ -32,6 +36,8 @@ interface MeProfileViewProps {
 }
 
 export const MeProfileView: React.FC<MeProfileViewProps> = ({
+  user,
+  onSignOut,
   weeklyPlan = DEFAULT_WEEKLY_PLAN,
   stats = INITIAL_STATS,
   onOpenInstallModal,
@@ -108,16 +114,25 @@ export const MeProfileView: React.FC<MeProfileViewProps> = ({
 
           <div>
             <div className="flex items-center gap-1.5">
-              <h2 className="text-lg font-black text-white">Alex Vance</h2>
+              <h2 className="text-lg font-black text-white">
+                {user?.displayName || 'Alex Vance'}
+              </h2>
               <ShieldCheck className="w-4 h-4" style={{ color: theme.primary }} />
             </div>
-            <p className="text-xs text-[#8E95A5] font-medium">
-              Hypertrophy & Strength • Tier 1 Athlete
+            <p className="text-xs text-[#8E95A5] font-medium flex items-center gap-1.5 mt-0.5">
+              {user?.phoneNumber ? (
+                <>
+                  <Phone className="w-3 h-3 text-[#38BDF8]" />
+                  <span className="font-mono text-[11px] text-[#A6AFC2]">{user.phoneNumber}</span>
+                </>
+              ) : (
+                'Hypertrophy & Strength • Tier 1 Athlete'
+              )}
             </p>
             <div className="flex items-center gap-3 mt-1.5 text-[11px] font-mono text-[#CBD3E3]">
-              <span>Weight: <strong className="text-white">82.4 kg</strong></span>
+              <span>Status: <strong className="text-emerald-400">Isolated Vault</strong></span>
               <span>•</span>
-              <span>Height: <strong className="text-white">182 cm</strong></span>
+              <span>Cloud Sync: <strong className="text-white">Active</strong></span>
             </div>
           </div>
         </div>
@@ -377,6 +392,23 @@ export const MeProfileView: React.FC<MeProfileViewProps> = ({
         </div>
         <ChevronRight className="w-5 h-5" style={{ color: theme.primary }} />
       </div>
+
+      {/* Sign Out Button */}
+      {onSignOut && (
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="w-full py-3.5 px-4 rounded-2xl bg-[#141622] hover:bg-[#1C1F2E] border border-[#23293D] text-[#EF4444] hover:text-[#F87171] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out ({user?.displayName || 'User'})</span>
+          </button>
+          <p className="text-center text-[10px] text-[#5A6173] mt-2">
+            Session is isolated and locked to this device until next login
+          </p>
+        </div>
+      )}
 
     </div>
   );

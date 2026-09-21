@@ -14,12 +14,13 @@ import {
   Calendar,
   Palette
 } from 'lucide-react';
-import { MuscleGroup, Exercise, WorkoutSession, DailyStats, DayWorkoutPlan } from '../types';
+import { MuscleGroup, Exercise, WorkoutSession, DailyStats, DayWorkoutPlan, AuthUser } from '../types';
 import { EXERCISE_DATABASE, PRELOADED_WORKOUT_OPTIONS } from '../data/mockData';
 import { useTheme } from '../lib/theme';
 import { haptics } from '../lib/haptics';
 
 interface HomeScreenProps {
+  user?: AuthUser | null;
   stats: DailyStats;
   weeklyPlan: DayWorkoutPlan[];
   todayPlan: DayWorkoutPlan;
@@ -44,6 +45,7 @@ const MUSCLE_PILLS: { name: MuscleGroup; label: string; icon: string }[] = [
 const DAYS_OF_WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
+  user,
   stats,
   weeklyPlan,
   todayPlan,
@@ -187,7 +189,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Clean Greeting with Today's Focus along with Set Up button */}
       <section className="mb-5 space-y-2">
         <h1 className="text-3xl font-extrabold tracking-tight text-white uppercase font-sans">
-          Welcome back, <span className="text-white">Alex</span>
+          Welcome back, <span className="text-white">{user?.displayName?.split(' ')[0] || 'Athlete'}</span>
         </h1>
 
         <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#131622] border border-[#23293D] shadow-md">
