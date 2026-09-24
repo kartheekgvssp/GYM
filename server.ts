@@ -47,6 +47,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Dumbbell Preacher Curl',
+            position: 'Seated with chest pressed firmly against 45° preacher pad, armpits locked at top rim, feet flat',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Beginner',
@@ -55,6 +56,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Overhead Dumbbell Triceps Extension',
+            position: 'Standing or seated upright, elbows pointed forward tucked close to ears, core braced',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x10',
             difficulty: 'Beginner',
@@ -69,6 +71,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Standing Barbell Curl',
+            position: 'Standing upright with neutral spine, feet shoulder-width, elbows pinned to lateral ribcage',
             setsAndReps: '3 sets × 8-10 reps',
             targetRepsBadge: '3x10',
             difficulty: 'Intermediate',
@@ -77,6 +80,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Close-Grip Bench Press',
+            position: 'Lying flat on bench, shoulder blades retracted, hands spaced 12-14 inches apart on barbell',
             setsAndReps: '4 sets × 8-10 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Intermediate',
@@ -91,6 +95,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: '21s Bicep Curls',
+            position: 'Standing tall with slight knee bend, chest proud, elbows stationary by torso',
             setsAndReps: '3 sets (7 bottom + 7 top + 7 full)',
             targetRepsBadge: '3x20',
             difficulty: 'Advanced',
@@ -145,6 +150,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Lat Pulldown',
+            position: 'Seated upright, thighs locked snugly under roller pads, slight 10-15° torso lean',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Beginner',
@@ -153,6 +159,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Seated Cable Row',
+            position: 'Seated on bench, knees slightly bent, feet braced on footrests, neutral upright spine',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x10',
             difficulty: 'Beginner',
@@ -167,6 +174,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Bodyweight Pull-Ups',
+            position: 'Hanging from overhead bar with wide overhand grip, hollow-body abdominal engagement',
             setsAndReps: '3 sets to failure',
             targetRepsBadge: '3x10',
             difficulty: 'Intermediate',
@@ -175,6 +183,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Overhand Barbell Row',
+            position: 'Hinged at hips at 45° angle, knees soft, spine straight, bar hanging directly below shoulders',
             setsAndReps: '4 sets × 8-10 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Intermediate',
@@ -189,6 +198,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Weighted Pull-Ups',
+            position: 'Suspended from pull-up bar with weight belt attached between thighs, full dead hang stretch',
             setsAndReps: '4 sets × 5-6 reps',
             targetRepsBadge: '3x20',
             difficulty: 'Advanced',
@@ -243,6 +253,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Machine Chest Press',
+            position: 'Seated upright at 90°, head and upper back flat against pad, handles level with mid-chest',
             setsAndReps: '3 sets × 12-15 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Beginner',
@@ -251,6 +262,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Incline Dumbbell Press',
+            position: 'Seated on 30-45° inclined bench, dumbbells over upper chest, shoulder blades retracted',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x10',
             difficulty: 'Beginner',
@@ -265,6 +277,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Flat Barbell Bench Press',
+            position: 'Lying flat on bench, 5-point contact, shoulder blades pinched, hands just wider than shoulders',
             setsAndReps: '4 sets × 6-10 reps',
             targetRepsBadge: '3x10',
             difficulty: 'Intermediate',
@@ -273,6 +286,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Incline Barbell Bench Press',
+            position: 'Lying on 30° incline bench, eyes under racked bar, elbows tucked 45° to torso',
             setsAndReps: '3 sets × 8-12 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Intermediate',
@@ -287,6 +301,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Paused Flat Bench Press',
+            position: 'Lying flat on bench, tight arch with feet driving floor, bar paused on lower chest',
             setsAndReps: '4 sets × 3-5 reps',
             targetRepsBadge: '3x20',
             difficulty: 'Advanced',
@@ -341,6 +356,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Standard Leg Press',
+            position: 'Seated in 45° reclined seat, lower back pressed against lumbar pad, feet centered shoulder-width',
             setsAndReps: '3 sets × 12-15 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Beginner',
@@ -349,6 +365,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Lying Leg Curl',
+            position: 'Lying prone on bench, kneecaps just off edge of pad, lever roller secured against lower Achilles',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x10',
             difficulty: 'Beginner',
@@ -363,6 +380,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Barbell Back Squat',
+            position: 'Standing tall with bar across upper trapezius, chest upright, feet shoulder-width flared 15°',
             setsAndReps: '4 sets × 8-10 reps',
             targetRepsBadge: '3x10',
             difficulty: 'Intermediate',
@@ -371,6 +389,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Dumbbell Romanian Deadlift',
+            position: 'Standing tall holding dumbbells at thighs, knees soft, hips pushing straight backward',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Intermediate',
@@ -385,6 +404,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Paused Barbell Squats',
+            position: 'Standing in deep parallel squat hole, motionless 2s pause with chest upright before driving up',
             setsAndReps: '4 sets × 4-6 reps',
             targetRepsBadge: '3x20',
             difficulty: 'Advanced',
@@ -439,6 +459,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Machine Overhead Press',
+            position: 'Seated upright at 90°, back against support cushion, handles level with ears',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Beginner',
@@ -447,6 +468,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Dumbbell Lateral Raise',
+            position: 'Standing with slight 15° forward torso lean, dumbbells at sides with soft elbows',
             setsAndReps: '3 sets × 12-15 reps',
             targetRepsBadge: '2x10',
             difficulty: 'Beginner',
@@ -461,6 +483,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Standing Military Barbell Press',
+            position: 'Standing tall with barbell racked on front collarbone, glutes squeezed, abs tight',
             setsAndReps: '4 sets × 6-8 reps',
             targetRepsBadge: '3x10',
             difficulty: 'Intermediate',
@@ -469,6 +492,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Cable Face Pulls',
+            position: 'Standing with staggered stance facing high cable pulley with dual-rope attachment',
             setsAndReps: '3 sets × 12-15 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Intermediate',
@@ -483,6 +507,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Behind-the-Back Cable Lateral Raise',
+            position: 'Standing beside low cable pulley, cable running behind lower back, gripping single handle',
             setsAndReps: '4 sets × 12-15 reps',
             targetRepsBadge: '3x20',
             difficulty: 'Advanced',
@@ -537,6 +562,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Captain\'s Chair Bent-Knee Raise',
+            position: 'Forearms rested on parallel padded supports, shoulders depressed, back flat against backrest',
             setsAndReps: '3 sets × 12-15 reps',
             targetRepsBadge: '2x15',
             difficulty: 'Beginner',
@@ -545,6 +571,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Cable Rope Ab Crunch',
+            position: 'Kneeling on mat facing high cable station, rope held firmly behind neck at ears',
             setsAndReps: '3 sets × 12-15 reps',
             targetRepsBadge: '2x10',
             difficulty: 'Beginner',
@@ -559,6 +586,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Hanging Straight Leg Raise',
+            position: 'Hanging from overhead bar with active shoulder engagement, legs straight or soft knees',
             setsAndReps: '3 sets × 10-12 reps',
             targetRepsBadge: '3x10',
             difficulty: 'Intermediate',
@@ -567,6 +595,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
           },
           {
             name: 'Decline Bench Weighted Russian Twist',
+            position: 'Seated on decline bench, shins locked under rollers, torso reclined back at 45° angle',
             setsAndReps: '3 sets × 16 total reps',
             targetRepsBadge: '2x15',
             difficulty: 'Intermediate',
@@ -581,6 +610,7 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         exercises: [
           {
             name: 'Hanging Toes to Bar',
+            position: 'Hanging from pull-up bar, lats engaged, driving feet in smooth arc until toes touch bar',
             setsAndReps: '4 sets × 8-10 reps',
             targetRepsBadge: '3x20',
             difficulty: 'Advanced',
@@ -625,9 +655,19 @@ async function startServer() {
   // API Equipment Scanner with Gemini Vision
   app.post('/api/scan-equipment', async (req, res) => {
     try {
-      const { image, targetMuscleHint } = req.body;
+      const { image, targetMuscleHint, isSamplePreset } = req.body;
       if (!image || typeof image !== 'string') {
         return res.status(400).json({ error: 'Missing image payload' });
+      }
+
+      // If user clicked one of the sample test presets (Arms, Back, Chest, Legs)
+      if (isSamplePreset && targetMuscleHint && PRESET_STAGE_EQUIPMENT_DATA[targetMuscleHint]) {
+        return res.json({
+          success: true,
+          isGymEquipment: true,
+          source: 'sample-preset',
+          data: PRESET_STAGE_EQUIPMENT_DATA[targetMuscleHint],
+        });
       }
 
       const client = getAIClient();
@@ -647,62 +687,78 @@ async function startServer() {
             }
           }
 
-          const prompt = `You are an elite sports biomechanist and gym equipment identification expert.
-Analyze this gym image or gym equipment snapshot.
-Detect the machine or free-weight equipment, identify its primary muscle group (Chest, Back, Arms, Legs, Shoulders, or Core), explain what we can do with it, its biomechanical uses/advantages, and generate the exact 3 progression training stages (Beginner Stage, Intermediate Stage, Advanced Stage) with exact sets and reps, plus quick rep badges (e.g. 2x15, 2x10, 3x10, 2x15, 3x20).
+          const prompt = `You are an elite sports biomechanist and gym equipment identification AI.
+Analyze this photo carefully.
 
-Respond in STRICT JSON with this exact schema:
+STEP 1: ACCURATELY VALIDATE IF THIS IS GENUINE GYM EQUIPMENT
+Determine whether the primary subject is genuine gym or workout equipment (e.g. dumbbells, barbells, weight plates, cable machines, weight benches, squat racks, pull-up stations, lat pulldowns, leg press, chest press, smith machine, treadmills, kettlebells, rowing machine, etc.).
+
+IF IT IS NOT GYM EQUIPMENT (for example: laptop, computer screen, sunglasses, eyeglasses, smartphone, clothing, desk, office chair, food, beverage, pets, landscape, automobile, random household item, or non-fitness objects):
+You MUST reject it with "isGymEquipment": false.
+Strict JSON schema for non-gym items:
 {
-  "equipmentName": "string (Concise equipment title, e.g. 'Lat Pulldown Machine' or 'Incline Dumbbell Bench')",
+  "isGymEquipment": false,
+  "detectedItem": "string (Specific name of the non-gym object detected, e.g. 'Laptop', 'Sunglasses', 'Coffee Mug', 'Office Chair', 'Smartphone')",
+  "rejectionReason": "string (A clear and polite message mentioning: This doesn't look like gym equipment. Detected item: <detectedItem>. Please rescan or take a photo of gym equipment like dumbbells, barbells, or machines.)"
+}
+
+IF IT IS GENUINE GYM EQUIPMENT:
+You MUST set "isGymEquipment": true and provide the full biomechanical breakdown:
+{
+  "isGymEquipment": true,
+  "equipmentName": "string (Specific equipment name, e.g. 'Olympic Barbell & Flat Bench' or 'Cable Crossover Station')",
   "equipmentType": "machine" | "cable" | "barbell" | "dumbbell" | "bodyweight" | "other",
   "primaryMuscle": "Chest" | "Back" | "Arms" | "Legs" | "Shoulders" | "Core",
   "targetMuscles": ["string", "string", "string"],
-  "overview": "1-2 sentence description of what this equipment does and how it works",
+  "overview": "string (1-2 sentence overview of what this equipment does and its biomechanical function)",
   "benefitsAndUses": [
-    { "title": "string", "description": "string" },
-    { "title": "string", "description": "string" },
-    { "title": "string", "description": "string" }
+    { "title": "string (Specific use/benefit, e.g. 'Continuous Resistance Arc')", "description": "string" },
+    { "title": "string (Specific use/benefit, e.g. 'Joint-Friendly Plane of Motion')", "description": "string" },
+    { "title": "string (Specific use/benefit, e.g. 'Scapular & Core Bracing')", "description": "string" }
   ],
   "stages": {
     "beginner": {
       "stageName": "Beginner Stage",
-      "description": "string",
+      "description": "string (Purpose of beginner stage on this equipment)",
       "exercises": [
         {
-          "name": "string",
+          "name": "string (Exercise name)",
+          "position": "string (Exact starting and exercise body position, e.g. 'Seated upright at 90° with chest flushed against chest pad, feet flat on floor')",
           "setsAndReps": "string (e.g. '3 sets × 10-12 reps')",
-          "targetRepsBadge": "string (e.g. '2x15')",
+          "targetRepsBadge": "string (e.g. '2x15' or '2x10')",
           "difficulty": "Beginner",
           "targetArea": "string",
-          "tips": ["string", "string"]
+          "tips": ["string (Execution tip 1)", "string (Execution tip 2)"]
         }
       ]
     },
     "intermediate": {
       "stageName": "Intermediate Stage",
-      "description": "string",
+      "description": "string (Hypertrophy overload purpose)",
       "exercises": [
         {
-          "name": "string",
+          "name": "string (Exercise name)",
+          "position": "string (Exact setup and body position, e.g. 'Seated on 30-45° inclined bench with shoulder blades pinched back')",
           "setsAndReps": "string (e.g. '4 sets × 8-10 reps')",
           "targetRepsBadge": "string (e.g. '3x10')",
           "difficulty": "Intermediate",
           "targetArea": "string",
-          "tips": ["string", "string"]
+          "tips": ["string (Execution tip 1)", "string (Execution tip 2)"]
         }
       ]
     },
     "advanced": {
       "stageName": "Advanced Stage",
-      "description": "string",
+      "description": "string (Peak tension and failure overload purpose)",
       "exercises": [
         {
-          "name": "string",
-          "setsAndReps": "string (e.g. '4 sets × 4-6 reps')",
+          "name": "string (Exercise name)",
+          "position": "string (Exact setup and body position)",
+          "setsAndReps": "string (e.g. '4 sets × 4-6 reps' or '21s')",
           "targetRepsBadge": "string (e.g. '3x20')",
           "difficulty": "Advanced",
           "targetArea": "string",
-          "tips": ["string", "string"]
+          "tips": ["string (Execution tip 1)", "string (Execution tip 2)"]
         }
       ]
     }
@@ -712,6 +768,7 @@ Respond in STRICT JSON with this exact schema:
       "name": "string",
       "difficulty": "Beginner",
       "targetArea": "string",
+      "position": "string (Body position)",
       "howToPerform": ["step 1", "step 2", "step 3"],
       "recommendedReps": { "hypertrophy": "10-12 reps", "strength": "6-8 reps", "endurance": "15 reps" },
       "recommendedSets": "3 sets",
@@ -721,10 +778,11 @@ Respond in STRICT JSON with this exact schema:
   ]
 }
 
-Only return valid JSON. Do not wrap in backticks or markdown if possible.`;
+Only return valid JSON. Do not wrap in markdown or backticks.`;
 
           const visionModels = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
           let parsedResult: any = null;
+          let nonGymRejection: { detectedItem: string; rejectionReason: string } | null = null;
 
           for (const modelName of visionModels) {
             try {
@@ -755,9 +813,20 @@ Only return valid JSON. Do not wrap in backticks or markdown if possible.`;
               const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
               const parsed = JSON.parse(cleanedText);
 
-              // Validate response format (handle array or object)
               const dataObj = Array.isArray(parsed) ? parsed[0] : parsed;
-              if (dataObj && dataObj.equipmentName && (dataObj.stages?.beginner || dataObj.exercises?.length)) {
+
+              // Check if model identified a non-gym item
+              if (dataObj && (dataObj.isGymEquipment === false || dataObj.isGymEquipment === 'false')) {
+                nonGymRejection = {
+                  detectedItem: dataObj.detectedItem || 'Non-gym item',
+                  rejectionReason: dataObj.rejectionReason || `This doesn't look like gym equipment (detected: ${dataObj.detectedItem || 'non-gym object'}). Please retry or resnap an image of gym equipment.`,
+                };
+                console.log(`Model ${modelName} rejected non-gym image:`, nonGymRejection.detectedItem);
+                break;
+              }
+
+              // Check if valid gym equipment data returned
+              if (dataObj && (dataObj.equipmentName || dataObj.isGymEquipment === true) && (dataObj.stages?.beginner || dataObj.exercises?.length)) {
                 parsedResult = dataObj;
                 console.log(`Successfully identified equipment using ${modelName}:`, dataObj.equipmentName, '-', dataObj.primaryMuscle);
                 break;
@@ -765,6 +834,16 @@ Only return valid JSON. Do not wrap in backticks or markdown if possible.`;
             } catch (modelErr: any) {
               console.warn(`Vision model ${modelName} failed, trying next:`, modelErr?.message || modelErr);
             }
+          }
+
+          // If the AI determined this is NOT gym equipment (e.g. sunglasses, laptop, phone):
+          if (nonGymRejection) {
+            return res.json({
+              success: false,
+              isGymEquipment: false,
+              detectedItem: nonGymRejection.detectedItem,
+              message: nonGymRejection.rejectionReason,
+            });
           }
 
           if (parsedResult) {
@@ -779,30 +858,32 @@ Only return valid JSON. Do not wrap in backticks or markdown if possible.`;
 
             return res.json({
               success: true,
+              isGymEquipment: true,
               source: 'gemini-vision',
               data: parsedResult,
             });
           }
         } catch (geminiError: any) {
-          console.warn('Gemini vision API error, falling back to smart gym equipment analyzer:', geminiError?.message || geminiError);
+          console.warn('Gemini vision API error:', geminiError?.message || geminiError);
         }
       }
 
-      // Determine smart fallback based on hint or fallback list
-      let fallbackKey = 'Back';
+      // If user specifically clicked one of the sample test buttons with a targetMuscleHint
       if (targetMuscleHint && PRESET_STAGE_EQUIPMENT_DATA[targetMuscleHint]) {
-        fallbackKey = targetMuscleHint;
-      } else {
-        const keys = Object.keys(PRESET_STAGE_EQUIPMENT_DATA);
-        fallbackKey = keys[Math.floor(Math.random() * keys.length)];
+        return res.json({
+          success: true,
+          isGymEquipment: true,
+          source: 'smart-analyzer',
+          data: PRESET_STAGE_EQUIPMENT_DATA[targetMuscleHint],
+        });
       }
 
-      const fallbackResult = PRESET_STAGE_EQUIPMENT_DATA[fallbackKey] || PRESET_STAGE_EQUIPMENT_DATA.Back;
-
+      // If the image was analyzed and not recognized as gym equipment
       return res.json({
-        success: true,
-        source: 'smart-analyzer',
-        data: fallbackResult,
+        success: false,
+        isGymEquipment: false,
+        detectedItem: 'Unrecognized item',
+        message: "This doesn't look like gym equipment. Please rescan the photo or retake an image of gym equipment like dumbbells, barbells, or machines.",
       });
     } catch (err: any) {
       console.error('Scan equipment endpoint error:', err);

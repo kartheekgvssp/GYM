@@ -88,6 +88,8 @@ export interface ScannedStageExercise {
   targetRepsBadge: string; // e.g. "2x15", "3x10", "3x20"
   difficulty: DifficultyLevel;
   targetArea: string;
+  position?: string; // e.g. "Seated upright at 90°, chest against pad, feet flat"
+  videoUrl?: string; // Looping exercise movement video or animation
   tips: string[];
   illustration?: string;
 }

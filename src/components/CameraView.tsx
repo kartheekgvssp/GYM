@@ -8,6 +8,9 @@ import {
   Dumbbell, 
   Scan,
   AlertCircle,
+  AlertTriangle,
+  RotateCcw,
+  RefreshCw,
   Image as ImageIcon,
   CheckCircle2,
   ChevronRight
@@ -78,11 +81,18 @@ export const CameraView: React.FC<CameraViewProps> = ({
   const [scanStepIndex, setScanStepIndex] = useState(0);
   const [scanResult, setScanResult] = useState<EquipmentScanData | null>(null);
 
+  // Non-Gym Item Error State
+  const [nonGymError, setNonGymError] = useState<{
+    detectedItem: string;
+    message: string;
+    previewUrl: string | null;
+  } | null>(null);
+
   const scanSteps = [
-    'Scanning Machine Geometry & Grip Trajectory...',
-    'Identifying Primary Muscle Recruitment...',
-    'Generating Beginner, Intermediate & Advanced Stages...',
-    'Finalizing Biomechanical Advantages & Rep Cues...'
+    'Scanning Item Geometry & Surfaces...',
+    'Validating Fitness Equipment Authenticity...',
+    'Analyzing Biomechanics & Muscle Recruitment...',
+    'Structuring Training Stages & Rep Positions...'
   ];
 
   useEffect(() => {
@@ -134,13 +144,14 @@ export const CameraView: React.FC<CameraViewProps> = ({
   }
 
   // Handle equipment analysis call with optimized image and progressive status
-  async function processEquipmentImage(rawImage: string | File, targetMuscleHint?: MuscleGroup) {
+  async function processEquipmentImage(rawImage: string | File, targetMuscleHint?: MuscleGroup, isSamplePreset?: boolean) {
     setIsScanning(true);
     setScanStepIndex(0);
+    setNonGymError(null);
 
     const stepInterval = setInterval(() => {
       setScanStepIndex((prev) => (prev < scanSteps.length - 1 ? prev + 1 : prev));
-    }, 700);
+    }, 600);
 
     try {
       // 1. Optimize image client-side to prevent huge base64 payload
@@ -155,129 +166,47 @@ export const CameraView: React.FC<CameraViewProps> = ({
         },
         body: JSON.stringify({ 
           image: optimizedBase64,
-          targetMuscleHint: targetMuscleHint 
+          targetMuscleHint: targetMuscleHint,
+          isSamplePreset: isSamplePreset,
         }),
       });
 
       const result = await response.json();
 
+      // Check if the backend detected a non-gym item (e.g. sunglasses, laptop, coffee cup)
+      if (result && (result.isGymEquipment === false || result.success === false)) {
+        clearInterval(stepInterval);
+        haptics.trigger('warning');
+        setNonGymError({
+          detectedItem: result.detectedItem || 'Non-gym item',
+          message: result.message || "This doesn't look like gym equipment. Please rescan the photo or retake the image.",
+          previewUrl: optimizedBase64,
+        });
+        return;
+      }
+
       if (result && result.success && result.data) {
         clearInterval(stepInterval);
         setScanResult(result.data);
         haptics.trigger('success');
-      } else {
-        throw new Error('Analysis returned empty data');
+        return;
       }
-    } catch (err) {
-      console.warn('Scan equipment fallback triggered:', err);
+
+      // Default rejection if data is missing
       clearInterval(stepInterval);
-      
-      // Fallback matching the video structure
-      const fallbackKey = targetMuscleHint || 'Back';
-      const fallbackData: EquipmentScanData = {
-        equipmentName: fallbackKey === 'Arms' ? 'Biceps Preacher Bench & Cable Station' : fallbackKey === 'Chest' ? 'Chest Press Machine & Incline Bench' : 'Lat Pulldown & Seated Cable Station',
-        equipmentType: 'machine',
-        primaryMuscle: fallbackKey,
-        targetMuscles: fallbackKey === 'Arms' ? ['Biceps Brachii', 'Brachialis', 'Triceps', 'Forearms'] : fallbackKey === 'Chest' ? ['Pectoralis Major', 'Anterior Delts', 'Triceps'] : ['Latissimus Dorsi', 'Rhomboids', 'Mid Traps'],
-        overview: 'Heavy traction and isolation station designed for maximum hypertrophy with strict biomechanical stabilization.',
-        benefitsAndUses: [
-          {
-            title: 'Anatomical Isolation',
-            description: 'Locks body angle in place to prevent momentum, maximizing muscle fiber tension throughout range of motion.'
-          },
-          {
-            title: 'Joint-Friendly Angles',
-            description: 'Reduces impingement by keeping wrists and elbows in their natural ergonomic movement tracks.'
-          },
-          {
-            title: 'Targeted Hypertrophy Squeeze',
-            description: 'Delivers continuous resistance at full muscle contraction where gravity-assisted free weights drop tension.'
-          }
-        ],
-        stages: {
-          beginner: {
-            stageName: 'Beginner Stage',
-            description: 'Foundational machine sets focusing on scapular/elbow stability and controlled eccentric tempo.',
-            exercises: [
-              {
-                name: fallbackKey === 'Arms' ? 'Dumbbell Preacher Curl' : fallbackKey === 'Chest' ? 'Machine Chest Press' : 'Lat Pulldown',
-                setsAndReps: '3 sets × 10-12 reps',
-                targetRepsBadge: '2x15',
-                difficulty: 'Beginner',
-                targetArea: 'Primary Muscle Base',
-                tips: ['Control descent for 2 seconds', 'Do not arch back']
-              },
-              {
-                name: fallbackKey === 'Arms' ? 'Overhead Dumbbell Triceps Extension' : fallbackKey === 'Chest' ? 'Incline Dumbbell Press' : 'Seated Cable Row',
-                setsAndReps: '3 sets × 10-12 reps',
-                targetRepsBadge: '2x10',
-                difficulty: 'Beginner',
-                targetArea: 'Secondary Fiber Stretch',
-                tips: ['Focus on peak contraction', 'Keep core engaged']
-              }
-            ]
-          },
-          intermediate: {
-            stageName: 'Intermediate Stage',
-            description: 'Compound overload movements for overall muscle thickness and functional strength.',
-            exercises: [
-              {
-                name: fallbackKey === 'Arms' ? 'Standing Barbell Curl' : fallbackKey === 'Chest' ? 'Flat Barbell Bench Press' : 'Pull-Ups',
-                setsAndReps: '3 sets × 8-10 reps',
-                targetRepsBadge: '3x10',
-                difficulty: 'Intermediate',
-                targetArea: 'Muscle Mass Compound',
-                tips: ['Pin elbows or retract scapulae', 'Explosive concentric phase']
-              },
-              {
-                name: fallbackKey === 'Arms' ? 'Close-Grip Bench Press' : fallbackKey === 'Chest' ? 'Incline Barbell Bench Press' : 'Barbell Row',
-                setsAndReps: '4 sets × 8-10 reps',
-                targetRepsBadge: '2x15',
-                difficulty: 'Intermediate',
-                targetArea: 'Target Thickness',
-                tips: ['Strict bar path', 'Breathe out on drive']
-              }
-            ]
-          },
-          advanced: {
-            stageName: 'Advanced Stage',
-            description: 'High-intensity tension and pauses to break through plateaus.',
-            exercises: [
-              {
-                name: fallbackKey === 'Arms' ? '21s Bicep Curls' : fallbackKey === 'Chest' ? 'Paused Flat Bench Press' : 'Weighted Pull-Ups',
-                setsAndReps: '3-4 sets',
-                targetRepsBadge: '3x20',
-                difficulty: 'Advanced',
-                targetArea: 'Maximum Muscle Fiber Recruitment',
-                tips: ['Zero momentum', 'Hold peak contraction']
-              }
-            ]
-          }
-        },
-        exercises: [
-          {
-            name: fallbackKey === 'Arms' ? 'Dumbbell Preacher Curl' : fallbackKey === 'Chest' ? 'Machine Chest Press' : 'Lat Pulldown',
-            difficulty: 'Beginner',
-            targetArea: fallbackKey,
-            howToPerform: [
-              'Position body securely against pads.',
-              'Grip handles firmly and stabilize core.',
-              'Execute movement smoothly along designated track.',
-              'Control the eccentric return over 2 seconds.'
-            ],
-            recommendedReps: {
-              hypertrophy: '10-12 reps',
-              strength: '6-8 reps',
-              endurance: '15 reps'
-            },
-            recommendedSets: '3-4 sets',
-            restPeriod: '60-90s',
-            formTips: ['Keep joints aligned with pivot points', 'Exhale during concentric drive']
-          }
-        ]
-      };
-      setScanResult(fallbackData);
-      haptics.trigger('success');
+      setNonGymError({
+        detectedItem: 'Unrecognized item',
+        message: "This doesn't look like gym equipment. Please rescan the photo or retake an image of gym equipment like dumbbells, barbells, or machines.",
+        previewUrl: optimizedBase64,
+      });
+    } catch (err: any) {
+      console.warn('Scan equipment error:', err);
+      clearInterval(stepInterval);
+      setNonGymError({
+        detectedItem: 'Scan Error',
+        message: "Unable to identify gym equipment from this photo. Please retake the photo with clearer lighting or hold the camera closer to the machine.",
+        previewUrl: null,
+      });
     } finally {
       clearInterval(stepInterval);
       setIsScanning(false);
@@ -322,6 +251,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
       haptics.trigger('selection');
       // Reset input value so re-selecting same or new photo always fires onChange
       e.target.value = '';
+      setNonGymError(null);
       processEquipmentImage(file);
     }
   }
@@ -329,7 +259,8 @@ export const CameraView: React.FC<CameraViewProps> = ({
   // Handle sample photo selection (instant test matching video)
   function handleSelectSample(sample: typeof SAMPLE_EQUIPMENT_PHOTOS[0]) {
     haptics.trigger('selection');
-    processEquipmentImage(sample.url, sample.muscle);
+    setNonGymError(null);
+    processEquipmentImage(sample.url, sample.muscle, true);
   }
 
   // Reset to retake
@@ -337,7 +268,158 @@ export const CameraView: React.FC<CameraViewProps> = ({
     haptics.trigger('light');
     setCapturedImage(null);
     setScanResult(null);
+    setNonGymError(null);
     setIsScanning(false);
+  }
+
+  // Trigger resnap from non-gym error state
+  function handleResnapFromError() {
+    haptics.trigger('medium');
+    setNonGymError(null);
+    setCapturedImage(null);
+    // Open camera / file chooser immediately
+    if (deviceCameraInputRef.current) {
+      deviceCameraInputRef.current.click();
+    } else if (fileInputRef.current) {
+      fileInputRef.current.click();
+    } else {
+      handleShutterClick();
+    }
+  }
+
+  // IF NON-GYM ERROR ACTIVE -> Render High-Fidelity Rejection & Resnap Screen
+  if (nonGymError && mode === 'equipment_scan') {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#0A0C14] text-white flex flex-col max-w-md mx-auto overflow-y-auto animate-in fade-in duration-300">
+        {/* Top Header */}
+        <div className="p-4 flex items-center justify-between border-b border-[#1E2436] bg-[#0E121E]">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#EF4444]/20 border border-[#EF4444]/40 flex items-center justify-center text-[#EF4444]">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-black uppercase tracking-wider text-white">
+                Equipment Verification Failed
+              </div>
+              <div className="text-[10px] font-mono text-[#EF4444]">
+                Non-Gym Item Detected
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-[#181D2D] hover:bg-[#252C42] border border-[#2B3550] flex items-center justify-center text-[#8E95A5] hover:text-white transition"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div className="p-5 space-y-5 flex-1 flex flex-col justify-center">
+          
+          {/* Scanned Image Preview with Rejection Overlay */}
+          <div className="relative rounded-2xl overflow-hidden border-2 border-dashed border-[#EF4444]/60 bg-[#121626] aspect-video max-h-56 flex items-center justify-center mx-auto w-full">
+            {nonGymError.previewUrl ? (
+              <>
+                <img 
+                  src={nonGymError.previewUrl} 
+                  alt="Scanned item" 
+                  className="w-full h-full object-cover filter brightness-75 contrast-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-[#EF4444] text-white shadow-md flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      Detected: {nonGymError.detectedItem}
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/60 text-[#EF4444] border border-[#EF4444]/40">
+                      Not Gym Gear
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="p-6 text-center space-y-2">
+                <AlertCircle className="w-10 h-10 text-[#EF4444] mx-auto opacity-80" />
+                <div className="text-sm font-bold text-white">Item Not Recognized</div>
+              </div>
+            )}
+          </div>
+
+          {/* Detailed Error Notice Card */}
+          <div className="p-4 rounded-2xl bg-[#141828] border border-[#EF4444]/30 space-y-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse" />
+              <h3 className="text-xs font-black uppercase tracking-wider text-[#EF4444] font-mono">
+                Scan Result Notice
+              </h3>
+            </div>
+            
+            <p className="text-sm font-semibold text-white leading-relaxed">
+              {nonGymError.message}
+            </p>
+
+            <div className="pt-2 border-t border-[#1F263D] text-[11px] text-[#8E95A5] space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[#10B981] font-bold">✓ Supported:</span>
+                <span>Machines, dumbbells, barbells, cable stations, racks, benches.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[#EF4444] font-bold">✕ Not Supported:</span>
+                <span>Laptops, sunglasses, phones, clothing, desk items, or food.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="space-y-2.5 pt-1">
+            <button
+              onClick={handleResnapFromError}
+              className="w-full py-3.5 px-4 rounded-xl bg-[#FF334B] hover:bg-[#E0243B] text-white font-extrabold text-sm uppercase tracking-wider transition shadow-lg shadow-[#FF334B]/20 flex items-center justify-center gap-2 active:scale-98"
+            >
+              <Camera className="w-4 h-4" />
+              <span>Retry / Resnap Gym Equipment</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setNonGymError(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.click();
+                }
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-[#181D2D] hover:bg-[#22293E] text-[#00E5FF] font-bold text-xs uppercase tracking-wider border border-[#2B3550] transition flex items-center justify-center gap-2 active:scale-98"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Choose Photo from Gallery</span>
+            </button>
+          </div>
+
+          {/* Sample Gym Gear Quick Test */}
+          <div className="pt-2 border-t border-[#1C2133] space-y-2">
+            <div className="text-[11px] font-mono text-[#8E95A5] text-center">
+              Or instantly test with a verified gym machine:
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {SAMPLE_EQUIPMENT_PHOTOS.map((sample) => (
+                <button
+                  key={sample.name}
+                  onClick={() => handleSelectSample(sample)}
+                  className="p-2.5 rounded-xl bg-[#131726] hover:bg-[#1C2338] border border-[#242D45] flex items-center gap-2 text-left transition active:scale-95"
+                >
+                  <Dumbbell className="w-3.5 h-3.5 text-[#00E5FF] flex-shrink-0" />
+                  <div className="truncate">
+                    <div className="text-xs font-bold text-white truncate">{sample.name}</div>
+                    <div className="text-[9px] font-mono text-[#8E95A5] truncate">{sample.muscle}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
   }
 
   // IF SCAN RESULT READY IN EQUIPMENT MODE -> Render Rich Equipment Breakdown View (matching video)

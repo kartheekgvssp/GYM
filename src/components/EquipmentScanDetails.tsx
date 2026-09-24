@@ -15,12 +15,16 @@ import {
   Award,
   PlusCircle,
   CheckCircle2,
-  Share2
+  Share2,
+  Compass,
+  Play,
+  Video
 } from 'lucide-react';
 import { EquipmentScanData, DayWorkoutPlan, Weekday, Exercise, MuscleGroup, ScannedStageExercise } from '../types';
 import { useTheme } from '../lib/theme';
 import { haptics } from '../lib/haptics';
 import { MuscleAnatomyVisual } from './MuscleAnatomyVisual';
+import { ExerciseMovementModal } from './ExerciseMovementModal';
 
 interface EquipmentScanDetailsProps {
   scanData: EquipmentScanData;
@@ -57,6 +61,9 @@ export const EquipmentScanDetails: React.FC<EquipmentScanDetailsProps> = ({
   
   // Selected exercise for quick adding
   const [selectedStageEx, setSelectedStageEx] = useState<ScannedStageExercise | null>(null);
+
+  // Active exercise for video movement demo modal
+  const [activeVideoExercise, setActiveVideoExercise] = useState<ScannedStageExercise | null>(null);
 
   // Day selection state for adding to weekly plan
   const weekdayNames: Weekday[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -315,38 +322,60 @@ export const EquipmentScanDetails: React.FC<EquipmentScanDetailsProps> = ({
                 </p>
 
                 {/* Exercises in Beginner Stage */}
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {stages.beginner.exercises.map((ex, idx) => (
                     <div 
                       key={idx}
-                      className="p-3 rounded-xl bg-[#161A27] border border-[#273044] flex items-center justify-between hover:border-[#3D4B6A] transition"
+                      className="p-3.5 rounded-xl bg-[#141824] border border-[#252E42] space-y-2 hover:border-[#3D4B6A] transition"
                     >
-                      <div className="space-y-1">
+                      <div className="flex items-center justify-between">
                         <div className="text-xs font-extrabold text-white flex items-center gap-2">
                           <span>{ex.name}</span>
+                          <span className="text-[10px] font-mono font-normal text-[#8E95A5]">({ex.targetArea})</span>
                         </div>
-                        <div className="text-xs font-mono font-bold text-[#FF5E1E] flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-[#FF2A42] text-white shadow-sm">
+                          {ex.targetRepsBadge}
+                        </span>
+                      </div>
+
+                      {/* Setup Position */}
+                      {ex.position && (
+                        <div className="flex items-start gap-1.5 text-[11px] text-[#A6B4C9] bg-[#0E121B] px-2.5 py-1.5 rounded-lg border border-[#1E2536]">
+                          <Compass className="w-3.5 h-3.5 text-[#00E5FF] flex-shrink-0 mt-0.5" />
+                          <div>
+                            <span className="text-[#00E5FF] font-bold">Position: </span>
+                            <span>{ex.position}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <div className="font-bold text-[#FF5E1E] flex items-center gap-1.5">
                           <Flame className="w-3.5 h-3.5 text-[#FF5E1E]" />
                           <span>{ex.setsAndReps}</span>
                         </div>
                         {ex.tips && ex.tips[0] && (
-                          <div className="text-[10px] text-[#8E95A5] italic">
+                          <div className="text-[10px] text-[#8E95A5] italic max-w-[200px] truncate">
                             💡 {ex.tips[0]}
                           </div>
                         )}
                       </div>
 
-                      {/* Reps Badge & Add Action */}
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-3">
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-[#FF2A42] text-white shadow-sm">
-                          {ex.targetRepsBadge}
-                        </span>
+                      {/* Video Movement Demo & Add Action */}
+                      <div className="flex items-center gap-2 pt-1 border-t border-[#1C2333]">
+                        <button
+                          onClick={() => setActiveVideoExercise(ex)}
+                          className="flex-1 py-1.5 px-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#101522] text-[#00E5FF] hover:bg-[#182136] transition border border-[#25324A] flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          <Play className="w-3 h-3 fill-[#00E5FF]" />
+                          <span>Watch Movement Demo Video</span>
+                        </button>
                         <button
                           onClick={() => handleAddToFeaturedLifts(ex)}
                           disabled={isAdding}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1E2536] text-[#00E5FF] hover:bg-[#28324A] transition border border-[#2E3A52] flex items-center gap-1 active:scale-95"
+                          className="py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1B2232] text-white hover:bg-[#252E44] transition border border-[#2B3650] flex items-center gap-1 active:scale-95"
                         >
-                          <PlusCircle className="w-3 h-3" />
+                          <PlusCircle className="w-3 h-3 text-[#10B981]" />
                           <span>Add Lift</span>
                         </button>
                       </div>
@@ -376,37 +405,60 @@ export const EquipmentScanDetails: React.FC<EquipmentScanDetailsProps> = ({
                 </p>
 
                 {/* Exercises in Intermediate Stage */}
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {stages.intermediate.exercises.map((ex, idx) => (
                     <div 
                       key={idx}
-                      className="p-3 rounded-xl bg-[#161A27] border border-[#273044] flex items-center justify-between hover:border-[#3D4B6A] transition"
+                      className="p-3.5 rounded-xl bg-[#141824] border border-[#252E42] space-y-2 hover:border-[#3D4B6A] transition"
                     >
-                      <div className="space-y-1">
+                      <div className="flex items-center justify-between">
                         <div className="text-xs font-extrabold text-white flex items-center gap-2">
                           <span>{ex.name}</span>
+                          <span className="text-[10px] font-mono font-normal text-[#8E95A5]">({ex.targetArea})</span>
                         </div>
-                        <div className="text-xs font-mono font-bold text-[#FF5E1E] flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-[#FF2A42] text-white shadow-sm">
+                          {ex.targetRepsBadge}
+                        </span>
+                      </div>
+
+                      {/* Setup Position */}
+                      {ex.position && (
+                        <div className="flex items-start gap-1.5 text-[11px] text-[#A6B4C9] bg-[#0E121B] px-2.5 py-1.5 rounded-lg border border-[#1E2536]">
+                          <Compass className="w-3.5 h-3.5 text-[#00E5FF] flex-shrink-0 mt-0.5" />
+                          <div>
+                            <span className="text-[#00E5FF] font-bold">Position: </span>
+                            <span>{ex.position}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <div className="font-bold text-[#FF5E1E] flex items-center gap-1.5">
                           <Flame className="w-3.5 h-3.5 text-[#FF5E1E]" />
                           <span>{ex.setsAndReps}</span>
                         </div>
                         {ex.tips && ex.tips[0] && (
-                          <div className="text-[10px] text-[#8E95A5] italic">
+                          <div className="text-[10px] text-[#8E95A5] italic max-w-[200px] truncate">
                             💡 {ex.tips[0]}
                           </div>
                         )}
                       </div>
 
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-3">
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-[#FF2A42] text-white shadow-sm">
-                          {ex.targetRepsBadge}
-                        </span>
+                      {/* Video Movement Demo & Add Action */}
+                      <div className="flex items-center gap-2 pt-1 border-t border-[#1C2333]">
+                        <button
+                          onClick={() => setActiveVideoExercise(ex)}
+                          className="flex-1 py-1.5 px-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#101522] text-[#00E5FF] hover:bg-[#182136] transition border border-[#25324A] flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          <Play className="w-3 h-3 fill-[#00E5FF]" />
+                          <span>Watch Movement Demo Video</span>
+                        </button>
                         <button
                           onClick={() => handleAddToFeaturedLifts(ex)}
                           disabled={isAdding}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1E2536] text-[#00E5FF] hover:bg-[#28324A] transition border border-[#2E3A52] flex items-center gap-1 active:scale-95"
+                          className="py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1B2232] text-white hover:bg-[#252E44] transition border border-[#2B3650] flex items-center gap-1 active:scale-95"
                         >
-                          <PlusCircle className="w-3 h-3" />
+                          <PlusCircle className="w-3 h-3 text-[#10B981]" />
                           <span>Add Lift</span>
                         </button>
                       </div>
@@ -436,37 +488,60 @@ export const EquipmentScanDetails: React.FC<EquipmentScanDetailsProps> = ({
                 </p>
 
                 {/* Exercises in Advanced Stage */}
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {stages.advanced.exercises.map((ex, idx) => (
                     <div 
                       key={idx}
-                      className="p-3 rounded-xl bg-[#161A27] border border-[#273044] flex items-center justify-between hover:border-[#3D4B6A] transition"
+                      className="p-3.5 rounded-xl bg-[#141824] border border-[#252E42] space-y-2 hover:border-[#3D4B6A] transition"
                     >
-                      <div className="space-y-1">
+                      <div className="flex items-center justify-between">
                         <div className="text-xs font-extrabold text-white flex items-center gap-2">
                           <span>{ex.name}</span>
+                          <span className="text-[10px] font-mono font-normal text-[#8E95A5]">({ex.targetArea})</span>
                         </div>
-                        <div className="text-xs font-mono font-bold text-[#FF5E1E] flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-[#FF2A42] text-white shadow-sm">
+                          {ex.targetRepsBadge}
+                        </span>
+                      </div>
+
+                      {/* Setup Position */}
+                      {ex.position && (
+                        <div className="flex items-start gap-1.5 text-[11px] text-[#A6B4C9] bg-[#0E121B] px-2.5 py-1.5 rounded-lg border border-[#1E2536]">
+                          <Compass className="w-3.5 h-3.5 text-[#00E5FF] flex-shrink-0 mt-0.5" />
+                          <div>
+                            <span className="text-[#00E5FF] font-bold">Position: </span>
+                            <span>{ex.position}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <div className="font-bold text-[#FF5E1E] flex items-center gap-1.5">
                           <Flame className="w-3.5 h-3.5 text-[#FF5E1E]" />
                           <span>{ex.setsAndReps}</span>
                         </div>
                         {ex.tips && ex.tips[0] && (
-                          <div className="text-[10px] text-[#8E95A5] italic">
+                          <div className="text-[10px] text-[#8E95A5] italic max-w-[200px] truncate">
                             💡 {ex.tips[0]}
                           </div>
                         )}
                       </div>
 
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-3">
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-[#FF2A42] text-white shadow-sm">
-                          {ex.targetRepsBadge}
-                        </span>
+                      {/* Video Movement Demo & Add Action */}
+                      <div className="flex items-center gap-2 pt-1 border-t border-[#1C2333]">
+                        <button
+                          onClick={() => setActiveVideoExercise(ex)}
+                          className="flex-1 py-1.5 px-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#101522] text-[#00E5FF] hover:bg-[#182136] transition border border-[#25324A] flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          <Play className="w-3 h-3 fill-[#00E5FF]" />
+                          <span>Watch Movement Demo Video</span>
+                        </button>
                         <button
                           onClick={() => handleAddToFeaturedLifts(ex)}
                           disabled={isAdding}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1E2536] text-[#00E5FF] hover:bg-[#28324A] transition border border-[#2E3A52] flex items-center gap-1 active:scale-95"
+                          className="py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1B2232] text-white hover:bg-[#252E44] transition border border-[#2B3650] flex items-center gap-1 active:scale-95"
                         >
-                          <PlusCircle className="w-3 h-3" />
+                          <PlusCircle className="w-3 h-3 text-[#10B981]" />
                           <span>Add Lift</span>
                         </button>
                       </div>
@@ -580,6 +655,18 @@ export const EquipmentScanDetails: React.FC<EquipmentScanDetailsProps> = ({
         )}
 
       </div>
+
+      {/* Interactive Movement Demo & Setup Video Modal */}
+      {activeVideoExercise && (
+        <ExerciseMovementModal
+          exercise={activeVideoExercise}
+          equipmentName={scanData.equipmentName}
+          primaryMuscle={scanData.primaryMuscle}
+          onClose={() => setActiveVideoExercise(null)}
+          onAddLift={(ex) => handleAddToFeaturedLifts(ex)}
+          isAdding={isAdding}
+        />
+      )}
 
     </div>
   );
