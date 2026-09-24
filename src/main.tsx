@@ -5,8 +5,8 @@ import './index.css';
 import { ThemeProvider } from './lib/theme.tsx';
 import { registerSW } from 'virtual:pwa-register';
 
-// Register service worker for PWA offline capabilities
-if (typeof window !== 'undefined') {
+// Register service worker for PWA offline capabilities in production
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator && import.meta.env.PROD) {
   registerSW({ immediate: true });
 }
 
