@@ -320,6 +320,8 @@ export const CameraView: React.FC<CameraViewProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       haptics.trigger('selection');
+      // Reset input value so re-selecting same or new photo always fires onChange
+      e.target.value = '';
       processEquipmentImage(file);
     }
   }

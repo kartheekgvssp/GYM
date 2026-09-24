@@ -509,6 +509,104 @@ const PRESET_STAGE_EQUIPMENT_DATA: Record<string, any> = {
         formTips: ['Keep wrists aligned with forearms', 'Do not flare elbows excessively wide']
       }
     ]
+  },
+  Core: {
+    equipmentName: 'Captain\'s Chair & Abdominal Crunch Station',
+    equipmentType: 'machine',
+    primaryMuscle: 'Core',
+    targetMuscles: ['Rectus Abdominis', 'Transverse Abdominis', 'Internal Obliques', 'External Obliques'],
+    overview: 'Specialized bodyweight and mechanical core station engineered to lock the spine into safe flexion and posterior pelvic tilt.',
+    benefitsAndUses: [
+      {
+        title: 'Spinal Decompression & Core Bracing',
+        description: 'Suspended forearm support removes lower back shearing stress while isolating deep abdominal stabilizers.'
+      },
+      {
+        title: 'Deep Transverse Abdominal Activation',
+        description: 'Enables strict pelvic tucking to strengthen the inner girdle and enhance abdominal core density.'
+      },
+      {
+        title: 'Progression to L-Sits & Hanging Leg Raises',
+        description: 'Builds foundational hip flexor and lower abdominal control for advanced calisthenics movements.'
+      }
+    ],
+    stages: {
+      beginner: {
+        stageName: 'Beginner Stage',
+        description: 'Supported knee raises and controlled machine crunches focusing on pelvic tuck.',
+        exercises: [
+          {
+            name: 'Captain\'s Chair Bent-Knee Raise',
+            setsAndReps: '3 sets × 12-15 reps',
+            targetRepsBadge: '2x15',
+            difficulty: 'Beginner',
+            targetArea: 'Lower Rectus Abdominis',
+            tips: ['Support forearms on pads and lock shoulders down', 'Curl pelvis upward toward chest', 'Lower slowly without swinging']
+          },
+          {
+            name: 'Cable Rope Ab Crunch',
+            setsAndReps: '3 sets × 12-15 reps',
+            targetRepsBadge: '2x10',
+            difficulty: 'Beginner',
+            targetArea: 'Upper Rectus Abdominis',
+            tips: ['Kneel with rope behind head', 'Contract abs to curl spine downward', 'Keep hips stationary']
+          }
+        ]
+      },
+      intermediate: {
+        stageName: 'Intermediate Stage',
+        description: 'Straight-leg raises and Russian twists for complete core rotational and anti-extension stability.',
+        exercises: [
+          {
+            name: 'Hanging Straight Leg Raise',
+            setsAndReps: '3 sets × 10-12 reps',
+            targetRepsBadge: '3x10',
+            difficulty: 'Intermediate',
+            targetArea: 'Full Anterior Core',
+            tips: ['Hang from bar with overhand grip', 'Raise legs to parallel or higher', 'Control negative without swinging']
+          },
+          {
+            name: 'Decline Bench Weighted Russian Twist',
+            setsAndReps: '3 sets × 16 total reps',
+            targetRepsBadge: '2x15',
+            difficulty: 'Intermediate',
+            targetArea: 'Internal & External Obliques',
+            tips: ['Lock feet under rollers', 'Lean back at 45-degree angle', 'Rotate torso under control with weight plate']
+          }
+        ]
+      },
+      advanced: {
+        stageName: 'Advanced Stage',
+        description: 'Toes-to-bar and isometric dragon flags for peak core tension and strength endurance.',
+        exercises: [
+          {
+            name: 'Hanging Toes to Bar',
+            setsAndReps: '4 sets × 8-10 reps',
+            targetRepsBadge: '3x20',
+            difficulty: 'Advanced',
+            targetArea: 'Maximum Abdominal Contraction',
+            tips: ['Strict pull without kip', 'Touch toes cleanly to bar', '3-second controlled eccentric lowering']
+          }
+        ]
+      }
+    },
+    exercises: [
+      {
+        name: 'Captain\'s Chair Knee Raise',
+        difficulty: 'Beginner',
+        targetArea: 'Core',
+        howToPerform: [
+          'Step onto foot rests and position forearms securely on padded arm rests.',
+          'Firmly grip handles and press down to keep shoulders depressed away from ears.',
+          'Brace core and curl knees smoothly up toward chest, rounding lower back slightly at top.',
+          'Lower legs back down slowly under tension without swinging or hyperextending.'
+        ],
+        recommendedReps: { hypertrophy: '12-15 reps', strength: '10-12 reps', endurance: '20 reps' },
+        recommendedSets: '3-4 sets',
+        restPeriod: '60s',
+        formTips: ['Initiate movement from abs, not hip flexors', 'Breathe out forcefully as knees reach top']
+      }
+    ]
   }
 };
 
@@ -625,39 +723,64 @@ Respond in STRICT JSON with this exact schema:
 
 Only return valid JSON. Do not wrap in backticks or markdown if possible.`;
 
-          const response = await client.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: [
-              {
-                role: 'user',
-                parts: [
+          const visionModels = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
+          let parsedResult: any = null;
+
+          for (const modelName of visionModels) {
+            try {
+              const response = await client.models.generateContent({
+                model: modelName,
+                contents: [
                   {
-                    inlineData: {
-                      mimeType,
-                      data: base64Data,
-                    },
-                  },
-                  {
-                    text: prompt,
+                    role: 'user',
+                    parts: [
+                      {
+                        inlineData: {
+                          mimeType,
+                          data: base64Data,
+                        },
+                      },
+                      {
+                        text: prompt,
+                      },
+                    ],
                   },
                 ],
-              },
-            ],
-            config: {
-              responseMimeType: 'application/json',
-            },
-          });
+                config: {
+                  responseMimeType: 'application/json',
+                },
+              });
 
-          const text = response.text || '';
-          const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-          const parsed = JSON.parse(cleanedText);
+              const text = response.text || '';
+              const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+              const parsed = JSON.parse(cleanedText);
 
-          // Ensure stages exist
-          if (parsed.stages && parsed.stages.beginner && parsed.stages.intermediate) {
+              // Validate response format (handle array or object)
+              const dataObj = Array.isArray(parsed) ? parsed[0] : parsed;
+              if (dataObj && dataObj.equipmentName && (dataObj.stages?.beginner || dataObj.exercises?.length)) {
+                parsedResult = dataObj;
+                console.log(`Successfully identified equipment using ${modelName}:`, dataObj.equipmentName, '-', dataObj.primaryMuscle);
+                break;
+              }
+            } catch (modelErr: any) {
+              console.warn(`Vision model ${modelName} failed, trying next:`, modelErr?.message || modelErr);
+            }
+          }
+
+          if (parsedResult) {
+            // Ensure stages structure is complete if simplified
+            const primaryMuscle = parsedResult.primaryMuscle || 'Back';
+            if (!parsedResult.stages?.beginner || !parsedResult.stages?.intermediate || !parsedResult.stages?.advanced) {
+              const fallbackTemplate = PRESET_STAGE_EQUIPMENT_DATA[primaryMuscle] || PRESET_STAGE_EQUIPMENT_DATA.Back;
+              parsedResult.stages = parsedResult.stages || fallbackTemplate.stages;
+              parsedResult.benefitsAndUses = parsedResult.benefitsAndUses || fallbackTemplate.benefitsAndUses;
+              parsedResult.targetMuscles = parsedResult.targetMuscles || fallbackTemplate.targetMuscles;
+            }
+
             return res.json({
               success: true,
               source: 'gemini-vision',
-              data: parsed,
+              data: parsedResult,
             });
           }
         } catch (geminiError: any) {

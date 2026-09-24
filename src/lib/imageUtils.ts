@@ -44,6 +44,9 @@ export async function optimizeImageForScan(source: File | string): Promise<strin
     };
 
     if (typeof source === 'string') {
+      if (source.startsWith('http://') || source.startsWith('https://')) {
+        img.crossOrigin = 'anonymous';
+      }
       img.src = source;
     } else {
       const reader = new FileReader();
