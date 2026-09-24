@@ -82,6 +82,22 @@ export interface EquipmentBenefit {
   description: string;
 }
 
+export interface ScannedStageExercise {
+  name: string;
+  setsAndReps: string; // e.g. "3 sets × 10-12 reps"
+  targetRepsBadge: string; // e.g. "2x15", "3x10", "3x20"
+  difficulty: DifficultyLevel;
+  targetArea: string;
+  tips: string[];
+  illustration?: string;
+}
+
+export interface TrainingStagePlan {
+  stageName: string;
+  description: string;
+  exercises: ScannedStageExercise[];
+}
+
 export interface EquipmentScanData {
   equipmentName: string;
   equipmentType: 'machine' | 'cable' | 'barbell' | 'dumbbell' | 'bodyweight' | 'other';
@@ -89,5 +105,10 @@ export interface EquipmentScanData {
   targetMuscles: string[];
   overview: string;
   benefitsAndUses: EquipmentBenefit[];
+  stages: {
+    beginner: TrainingStagePlan;
+    intermediate: TrainingStagePlan;
+    advanced: TrainingStagePlan;
+  };
   exercises: ScannedExercise[];
 }
