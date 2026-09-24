@@ -112,5 +112,5 @@ export interface EquipmentScanData {
     intermediate: TrainingStagePlan;
     advanced: TrainingStagePlan;
   };
-  exercises: ScannedExercise[];
+  exercises?: ScannedExercise[];
 }

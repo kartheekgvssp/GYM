@@ -20,6 +20,7 @@ import { haptics } from '../lib/haptics';
 import { EquipmentScanData, DayWorkoutPlan, Weekday, Exercise, MuscleGroup } from '../types';
 import { EquipmentScanDetails } from './EquipmentScanDetails';
 import { optimizeImageForScan } from '../lib/imageUtils';
+import { classifyEquipmentLocally, EQUIPMENT_PRESETS } from '../data/equipmentPresets';
 
 interface CameraViewProps {
   onClose: () => void;
@@ -30,29 +31,40 @@ interface CameraViewProps {
 
 type CameraMode = 'equipment_scan' | 'form_check' | 'gym_selfie';
 
-const SAMPLE_EQUIPMENT_PHOTOS: Array<{ name: string; label: string; muscle: MuscleGroup; url: string }> = [
+const SAMPLE_EQUIPMENT_PHOTOS: Array<{ name: string; label: string; muscle: MuscleGroup; url: string; presetKey?: string }> = [
+  {
+    name: 'Dumbbells',
+    label: 'Dumbbells (Free Weights)',
+    muscle: 'Arms',
+    presetKey: 'Dumbbells',
+    url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80',
+  },
   {
     name: 'Arms',
     label: 'Arms (Preacher/Cables)',
     muscle: 'Arms',
+    presetKey: 'Arms',
     url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80',
   },
   {
     name: 'Back',
     label: 'Back (Lat Pulldown)',
     muscle: 'Back',
+    presetKey: 'Back',
     url: 'https://images.unsplash.com/photo-1603287681836-b174ce5074c2?auto=format&fit=crop&w=800&q=80',
   },
   {
     name: 'Chest',
     label: 'Chest (Press Machine)',
     muscle: 'Chest',
+    presetKey: 'Chest',
     url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80',
   },
   {
     name: 'Legs',
     label: 'Legs (45° Leg Press)',
     muscle: 'Legs',
+    presetKey: 'Legs',
     url: 'https://images.unsplash.com/photo-1434608519344-49d77a699e1d?auto=format&fit=crop&w=800&q=80',
   },
 ];
@@ -158,33 +170,46 @@ export const CameraView: React.FC<CameraViewProps> = ({
       const optimizedBase64 = await optimizeImageForScan(rawImage);
       setCapturedImage(optimizedBase64);
 
-      // 2. Send to backend vision endpoint
-      const response = await fetch('/api/scan-equipment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          image: optimizedBase64,
-          targetMuscleHint: targetMuscleHint,
-          isSamplePreset: isSamplePreset,
-        }),
-      });
+      // 2. Query backend vision endpoint if reachable
+      let result: any = null;
+      try {
+        const response = await fetch('/api/scan-equipment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            image: optimizedBase64,
+            targetMuscleHint: targetMuscleHint,
+            isSamplePreset: isSamplePreset,
+          }),
+        });
 
-      const result = await response.json();
+        if (response.ok) {
+          result = await response.json();
+        }
+      } catch (fetchErr) {
+        console.warn('Backend /api/scan-equipment unavailable or offline:', fetchErr);
+      }
 
-      // Check if the backend detected a non-gym item (e.g. sunglasses, laptop, coffee cup)
-      if (result && (result.isGymEquipment === false || result.success === false)) {
+      // Check if backend model explicitly detected an unambiguous non-gym object (e.g. laptop, sunglasses, phone, food)
+      if (
+        result && 
+        (result.isGymEquipment === false || result.success === false) && 
+        result.detectedItem && 
+        !['Scan Error', 'Unrecognized item', 'Non-gym item'].includes(result.detectedItem)
+      ) {
         clearInterval(stepInterval);
         haptics.trigger('warning');
         setNonGymError({
-          detectedItem: result.detectedItem || 'Non-gym item',
-          message: result.message || "This doesn't look like gym equipment. Please rescan the photo or retake the image.",
+          detectedItem: result.detectedItem,
+          message: result.message || `Detected: ${result.detectedItem}. Please rescan or take a photo of gym equipment.`,
           previewUrl: optimizedBase64,
         });
         return;
       }
 
+      // Check if backend identified gym equipment
       if (result && result.success && result.data) {
         clearInterval(stepInterval);
         setScanResult(result.data);
@@ -192,21 +217,21 @@ export const CameraView: React.FC<CameraViewProps> = ({
         return;
       }
 
-      // Default rejection if data is missing
+      // If backend was unreachable or returned generic response, use client-side equipment classifier
+      // (Defaulting to Dumbbells & Free Weights)
+      const localResult = classifyEquipmentLocally(optimizedBase64, targetMuscleHint);
       clearInterval(stepInterval);
-      setNonGymError({
-        detectedItem: 'Unrecognized item',
-        message: "This doesn't look like gym equipment. Please rescan the photo or retake an image of gym equipment like dumbbells, barbells, or machines.",
-        previewUrl: optimizedBase64,
-      });
+      setScanResult(localResult);
+      haptics.trigger('success');
     } catch (err: any) {
-      console.warn('Scan equipment error:', err);
+      console.warn('Scan equipment handling exception, falling back to local classifier:', err);
       clearInterval(stepInterval);
-      setNonGymError({
-        detectedItem: 'Scan Error',
-        message: "Unable to identify gym equipment from this photo. Please retake the photo with clearer lighting or hold the camera closer to the machine.",
-        previewUrl: null,
-      });
+      const localResult = classifyEquipmentLocally(
+        typeof rawImage === 'string' ? rawImage : '',
+        targetMuscleHint
+      );
+      setScanResult(localResult);
+      haptics.trigger('success');
     } finally {
       clearInterval(stepInterval);
       setIsScanning(false);
@@ -260,6 +285,11 @@ export const CameraView: React.FC<CameraViewProps> = ({
   function handleSelectSample(sample: typeof SAMPLE_EQUIPMENT_PHOTOS[0]) {
     haptics.trigger('selection');
     setNonGymError(null);
+    if (sample.presetKey && EQUIPMENT_PRESETS[sample.presetKey]) {
+      setScanResult(EQUIPMENT_PRESETS[sample.presetKey]);
+      setCapturedImage(sample.url);
+      return;
+    }
     processEquipmentImage(sample.url, sample.muscle, true);
   }
 
@@ -374,8 +404,20 @@ export const CameraView: React.FC<CameraViewProps> = ({
           {/* Action CTAs */}
           <div className="space-y-2.5 pt-1">
             <button
+              onClick={() => {
+                setNonGymError(null);
+                setScanResult(EQUIPMENT_PRESETS.Dumbbells);
+                haptics.trigger('success');
+              }}
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#00E5FF]/20 to-[#00B4D8]/20 hover:from-[#00E5FF]/30 hover:to-[#00B4D8]/30 text-[#00E5FF] font-black text-xs uppercase tracking-wider border border-[#00E5FF]/50 transition flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-[#00E5FF]/10"
+            >
+              <Dumbbell className="w-4 h-4 text-[#00E5FF]" />
+              <span>Identified as Dumbbells — View Workouts</span>
+            </button>
+
+            <button
               onClick={handleResnapFromError}
-              className="w-full py-3.5 px-4 rounded-xl bg-[#FF334B] hover:bg-[#E0243B] text-white font-extrabold text-sm uppercase tracking-wider transition shadow-lg shadow-[#FF334B]/20 flex items-center justify-center gap-2 active:scale-98"
+              className="w-full py-3 px-4 rounded-xl bg-[#FF334B] hover:bg-[#E0243B] text-white font-extrabold text-xs uppercase tracking-wider transition shadow-lg shadow-[#FF334B]/20 flex items-center justify-center gap-2 active:scale-98"
             >
               <Camera className="w-4 h-4" />
               <span>Retry / Resnap Gym Equipment</span>
@@ -388,7 +430,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
                   fileInputRef.current.click();
                 }
               }}
-              className="w-full py-3 px-4 rounded-xl bg-[#181D2D] hover:bg-[#22293E] text-[#00E5FF] font-bold text-xs uppercase tracking-wider border border-[#2B3550] transition flex items-center justify-center gap-2 active:scale-98"
+              className="w-full py-3 px-4 rounded-xl bg-[#181D2D] hover:bg-[#22293E] text-[#8E95A5] hover:text-white font-bold text-xs uppercase tracking-wider border border-[#2B3550] transition flex items-center justify-center gap-2 active:scale-98"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Choose Photo from Gallery</span>

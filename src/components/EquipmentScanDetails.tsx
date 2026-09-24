@@ -133,7 +133,7 @@ export const EquipmentScanDetails: React.FC<EquipmentScanDetailsProps> = ({
     beginner: {
       stageName: 'Beginner Stage',
       description: 'Foundational exercises for mind-muscle connection and joint safety.',
-      exercises: scanData.exercises.slice(0, 2).map((e, idx) => ({
+      exercises: (scanData.exercises || []).slice(0, 2).map((e, idx) => ({
         name: e.name,
         setsAndReps: '3 sets × 10-12 reps',
         targetRepsBadge: idx === 0 ? '2x15' : '2x10',
